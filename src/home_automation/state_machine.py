@@ -24,6 +24,7 @@ import roslib; roslib.load_manifest('home_automation')
 import rospy
 import smach
 import smach_ros
+import time
 
 # State Exhibit
 class Exhibit(smach.State):
@@ -33,11 +34,12 @@ class Exhibit(smach.State):
 
   def execute(self, userdata):
     rospy.loginfo('Executing state EXHIBIT')
+    time.sleep(2)
     if self.counter < 3:
       self.counter += 1
       return 'succeeded'
     else:
-      return 'aborted'
+      return 'succeeded'
 
 # State Idle
 class Idle(smach.State):
@@ -46,6 +48,7 @@ class Idle(smach.State):
 
   def execute(self, userdata):
     rospy.loginfo('Executing state IDLE')
+    time.sleep(3)
     return 'succeeded'
 
 # Entry point
@@ -73,8 +76,15 @@ def main():
       }
     )
 
+  sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
+  sis.start()
+
   # Execute SMACH plan
   outcome = sm.execute()
+
+  # Wait for ctrl-c to stop the application
+  rospy.spin()
+  sis.stop()
 
 if __name__ == '__main__':
   main()
